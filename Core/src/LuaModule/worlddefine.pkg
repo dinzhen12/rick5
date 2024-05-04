@@ -1,0 +1,131 @@
+$#include <geometry.h>
+$#include <chrono>
+$#include "staticparams.h"
+$#include "WorldDefine.h"
+class ObjectPoseT{
+	ObjectPoseT();
+	const CGeoPoint& Pos() const;
+	void SetPos(double x,double y);
+	void SetPos(const CGeoPoint& pos);
+	double X() const;
+	double Y() const;
+	void SetVel(double x,double y);
+	void SetVel(const CVector& vel);
+	const CVector& Vel() const;
+	const CVector& RawVel() const;
+	double VelX() const;
+	double VelY() const;
+	void SetValid(bool v);
+	bool Valid() const;
+	const CGeoPoint& RawPos() const;
+	void SetRawPos(double x, double y);
+	void SetRawPos(const CGeoPoint& pos);
+};
+
+struct PlayerPoseT : public ObjectPoseT{
+	PlayerPoseT();
+	double Dir() const;
+	void SetDir(double d);
+	double RotVel() const;
+	void SetRotVel(double d);
+    double RawRotVel() const;
+    void SetRawRotVel(double d);
+};
+
+class PlayerTypeT{
+
+};
+
+class PlayerVisionT : public PlayerPoseT {
+	void SetType(int t);
+	int Type() const;
+};
+
+struct PlayerCapabilityT{
+	double maxAccel;
+	double maxSpeed;
+	double maxAngularAccel;
+	double maxAngularSpeed;
+	double maxDec;
+	double maxAngularDec;
+};
+
+
+struct balls{
+    public:
+
+        double vel; // 球速度
+        double acc; // 球加速度
+        CGeoPoint pos ; // 球位置
+        CGeoPoint pos_move_befor; // 球运动之前的位置
+        CGeoPoint first_dribbling_pos; // 第一次带球位置
+        double predict_vel_max; // 预测的最大速度
+        double avg_vel; // 球平均速度
+        double vel_dir; // 球速度方向
+        int rights; // 球权 [-1：敌方, 0:无人, 1:我方, 2:顶牛(双方处于纠缠的状况，无法判断具体球权属于谁)]
+        int our_min_dist_num; // 我方距离球最近的车号
+        int their_min_dist_num; // 敌方距离球最近的车号
+};
+//我方相关
+struct ours{
+    public:
+        int player_num; // 我方玩家数目
+        int goalie_num; // 我方守门员号码
+        int dribbling_num; //带球的机器人编号
+        int to_balldist_min_num; //距离球最近的机器人
+        int defend_player_num1;
+        int defend_player_num2;
+
+};
+
+//敌方相关
+struct theirs{
+    public:
+        int player_num; // 敌方玩家数目
+        int goalie_num ; // 敌方守门员号码
+        int dribbling_num ;//带球的机器人编号
+        int to_balldist_min_num;//距离球最近的机器人
+
+};
+
+//任务列表
+struct tasks{
+    public:
+        int player_num; // 当前机器人编号
+        double confidence_pass; // 传球置信度
+        double confidence_shoot; // 射门置信度
+        double confidence_dribbling; // 带球置信度
+        double confidence_run; // 跑位置信度
+        double confidence_defend; // 防守置信度
+        double confidence_getball; // 抢球、接球置信度
+        double max_confidence; // 最大的置信度
+        int max_confidence_pass_num; // 被传球概率最大的机器人号码
+        int infrared_count;
+        CGeoPoint shoot_pos; // 射门点
+        std::string status; // -1异常 0传球 1射门 2带球 3跑位 4防守 5抢球、接球
+};
+
+//时间、其他相关
+struct times{
+    public:
+        double delta_time; // 与上一帧的时间间隔
+        int tick_count; // 帧计数
+        int tick_key; // 关键帧
+        std::chrono::high_resolution_clock::time_point time; // 时间
+};
+
+struct golobalDatas{
+    public:
+        double confidence_shoot; // 与上一帧的时间间隔
+
+};
+
+struct GlobalTick{
+    public:
+        times time;
+        balls ball;
+        ours our;
+        theirs their;
+        tasks task[PARAM::Field::MAX_PLAYER];
+        golobalDatas globalData;
+};

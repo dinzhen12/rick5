@@ -1,0 +1,66 @@
+$#include <geometry.h>
+$#include "staticparams.h"
+
+namespace Utils{
+	// // // // // Hu-ROCOS-2024 // // // // // 
+
+	
+	GlobalTick UpdataTickMessage(const CVisionModule *pVision,int goalie_num ,int defend_player_num1, int defend_player_num2); //获取帧信息
+	CGeoPoint GetAttackPos(const CVisionModule *pVision,int num ,CGeoPoint shootPos,CGeoPoint startPoint,CGeoPoint endPoint,double step,double ballDist = 1000);
+
+	CGeoPoint GetShowDribblingPos(const CVisionModule *pVision,CGeoPoint player_pos,CGeoPoint target_pos);
+
+	CGeoPoint GetTouchPos(const CVisionModule *pVision, CGeoPoint player_pos, double touchAngle,bool double_flag = false);
+
+	CGeoPoint GetBestInterPos(const CVisionModule *pVision, CGeoPoint playerPos, double playerVel, int flag = 0, int permissions = 0);
+	
+	// 小工具
+	CGeoPoint GetBallMaxPos(const CVisionModule *pVision);
+	bool InExclusionZone(CGeoPoint Point, double buffer = 0,std::string dir = "all");
+	bool InField(CGeoPoint Point);
+	bool InOurField(CGeoPoint Point);
+	double angleDiff(double angle1, double angle2);
+	// int getInitData(const CVisionModule *pVision, int flag = 1);
+	CGeoPoint PosGetShootPoint(const CVisionModule *pVision, double x, double y);   
+	CGeoPoint GetShootPoint(const CVisionModule *pVision, int num);
+	std::string GlobalStatus(const CVisionModule *pVision,int attack_flag);
+	//CGeoPoint GetInterPos(const CVisionModule *pVision, CGeoPoint player_pos,double velocity);
+	std::string GlobalComputingPos(const CVisionModule *pVision);
+	CGeoPoint GetAttackPos(const CVisionModule *pVision,int num);
+	bool isValidPass(const CVisionModule *pVision, CGeoPoint start, CGeoPoint end, double buffer);
+    bool CheckSideToTurn(const CVisionModule *pVision, int role, double angle);
+	// Defence
+	int ClosestPlayerToPlayer(const CVisionModule *pVision, int role, int type);
+	CGeoPoint ClosestPlayerToPoint(const CVisionModule *pVision, CGeoPoint pos, int type, int role = -1);
+	int ClosestPlayerNoToPoint(const CVisionModule *pVision, CGeoPoint pos, int type, int role = -1);
+
+	CGeoPoint DEFENDER_ComputeCrossPenalty(const CVisionModule *pVision, CGeoLine line);
+	double DEFENDER_ComputeDistance(CGeoPoint hitPoint);
+	
+	// // // // // END // // // // // 
+	double Normalize(double angle);
+	CVector Polar2Vector(double m,double angle);
+	double VectorDot(const CVector& v1, const CVector& v2);
+	bool InBetween(const CGeoPoint& p,const CGeoPoint& p1,const CGeoPoint& p2);
+	bool InBetween(double v,double v1,double v2);
+	bool AngleBetween(double d, double d1, double d2, double buffer = PARAM::Math::PI/30); 
+	bool InBetween(const CVector& v, const CVector& v1, const CVector& v2, double buffer = PARAM::Math::PI/30);
+	inline double Deg2Rad(double angle);
+	inline double Rad2Deg(double angle);
+	CGeoPoint MakeInField(const CGeoPoint& p,const double buffer = 0);
+	bool IsInField(const CGeoPoint p, double buffer = 0); 
+	bool IsInFieldV2(const CGeoPoint p, double buffer = 0);
+	inline double FieldLeft();
+	inline double FieldRight();
+	inline double FieldTop();
+	inline double FieldBottom();
+	inline CGeoPoint LeftTop();
+	inline CGeoPoint RightBottom();
+	inline int Sign(double d);
+	CGeoPoint MakeOutOfOurPenaltyArea(const CGeoPoint& p,const double buffer);
+	CGeoPoint MakeOutOfCircleAndInField(const CGeoPoint& center,const double radius,const CGeoPoint& p,const double buffer);
+	bool InOurPenaltyArea(const CGeoPoint& p,const double buffer);
+	bool InTheirPenaltyArea(const CGeoPoint& p,const double buffer);
+	bool PlayerNumValid(int num);
+	bool canGo(const CVisionModule* pVision, const int num, const CGeoPoint& target, const int flag, const double avoidBuffer);
+}
