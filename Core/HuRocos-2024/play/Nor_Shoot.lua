@@ -40,6 +40,12 @@ local debugMesg = function ()
 		debugEngine:gui_debug_msg(resShootPos,"rotCompensatePos",6)
 
 end
+
+local firstPos = {
+    CGeoPoint(1500,0),
+    CGeoPoint(-750,1299),
+    CGeoPoint(-750,-1299)
+}
 return {
 
 firstState = "ready1",
@@ -55,12 +61,14 @@ firstState = "ready1",
 		GlobalMessage.Tick = Utils.UpdataTickMessage(vision,our_goalie_num,defend_num1,defend_num2)
 		debugMesg()
 		shoot_pos = shootPosFun()
-
+        debugEngine:gui_debug_arc(firstPos[1],600,0,360,4)
+        debugEngine:gui_debug_arc(firstPos[2],600,0,360,1)
+        debugEngine:gui_debug_arc(firstPos[3],600,0,360,1)
 		if(player.myinfraredCount("Assister") > 5) then
 			return "Turn"
 		end
 	end,
-	Assister = task.getball(function() return shoot_pos end,param.playerVel,param.getballMode),
+	Assister = task.getball(CGeoPoint(1500,0),param.playerVel,param.getballMode),
 	match = "[A]"
 },
 

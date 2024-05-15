@@ -394,8 +394,9 @@ namespace Utils
      * @return
      */
 
-    CGeoPoint GetBestInterPos(const CVisionModule *pVision, CGeoPoint playerPos, double playerVel, int flag, int permissions)
+    CGeoPoint GetBestInterPos(const CVisionModule *pVision, CGeoPoint playerPos, double playerVel, int flag, int permissions,CGeoPoint firstPos)
     {
+        double toFirstPosMinDist = 800;
         CGeoPoint ball_pos = pVision->ball().Pos();
         if (pVision->ball().Valid())
             ball_pos = pVision->ball().Pos();
@@ -422,6 +423,10 @@ namespace Utils
             // 判断是否在禁区
             if (InExclusionZone(ballPrePos, 200) && permissions == 0)
                 continue;
+            if (ballPrePos.dist(firstPos) > toFirstPosMinDist) 
+                continue;
+            else
+                maxBallPos = ballPrePos;
             // 判断是否在场外
             if (!InField(ballPrePos) && permissions < 2)
                 continue;
@@ -431,7 +436,7 @@ namespace Utils
             // 可能截到球的点
             if (tolerance >= 0)
             {
-                //                GDebugEngine::Instance()->gui_debug_line(playerPos, ballPrePos);
+                               // GDebugEngine::Instance()->gui_debug_line(playerPos, ballPrePos);
                 // 记录最快截球点
                 if (getBallTime < minTime)
                 {
@@ -444,13 +449,13 @@ namespace Utils
                     maxTolerance = tolerance;
                     maxTolerancePos = ballPrePos;
                 }
-                //                GDebugEngine::Instance()->gui_debug_x(ballPrePos, 2);
+                               // GDebugEngine::Instance()->gui_debug_x(ballPrePos, 2);
             }
             maxAllowedBallPos = ballPrePos;
             //            GDebugEngine::Instance()->gui_debug_msg(ballPrePos, to_string(getBallTime),3,0,90);
             //            GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(ballPrePos.x() + 1000,ballPrePos.y()), to_string(t),4,0,90);
             //            GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(ballPrePos.x() + 2000,ballPrePos.y()), to_string(tolerance),1,0,90);
-            //            GDebugEngine::Instance()->gui_debug_x(ballPrePos);
+                       GDebugEngine::Instance()->gui_debug_x(ballPrePos);
         }
 
         // 返回结果
@@ -465,13 +470,13 @@ namespace Utils
                 break;
             case 1:
                 // 返回最大容忍度的位置
-                //                GDebugEngine::Instance()->gui_debug_line(playerPos, maxTolerancePos,5,1);
+                // GDebugEngine::Instance()->gui_debug_line(playerPos, maxTolerancePos,5,1);
                 return maxTolerancePos;
                 break;
             case 2:
                 // 返回0,1方案的中点
                 CGeoPoint posMid = CGeoPoint((minGetBallPos.x() + maxTolerancePos.x()) / 2, (minGetBallPos.y() + maxTolerancePos.y()) / 2);
-                //                GDebugEngine::Instance()->gui_debug_line(posMid, maxTolerancePos,5,1);
+                               // GDebugEngine::Instance()->gui_debug_line(posMid, maxTolerancePos,5,1);
                 return posMid;
                 break;
             }
@@ -479,13 +484,13 @@ namespace Utils
         else if (InField(maxBallPos) && !InExclusionZone(maxBallPos))
         {
             // 返回最远的球位置(场内)
-            //            GDebugEngine::Instance()->gui_debug_line(playerPos, maxBallPos,5,1);
+            GDebugEngine::Instance()->gui_debug_msg(playerPos, "NOFINDPOS",5,1);
             return maxBallPos;
         }
         else
         {
             // 返回最后一个预测球的位置
-            //            GDebugEngine::Instance()->gui_debug_line(playerPos, maxAllowedBallPos,5,1);
+                       // GDebugEngine::Instance()->gui_debug_line(playerPos, maxAllowedBallPos,5,1);
             return maxAllowedBallPos;
         }
         return CGeoPoint(inf, inf);
@@ -1216,7 +1221,7 @@ namespace Utils
     bool isValidPass(const CVisionModule *pVision, CGeoPoint start, CGeoPoint end, double buffer)
     {
         CGeoSegment Line(start, end);
-        for (int i = 0; i < Tick[now].their.player_num; ++i)
+        for (int i = 0; i < PARAM::Field::MAX_PLAYER ; i++)
         {
             CGeoPoint player_pos(pVision->theirPlayer(i).Pos());
             CGeoPoint player_projection = Line.projection(player_pos);

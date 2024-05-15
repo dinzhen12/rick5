@@ -1,7 +1,7 @@
 function Getball(task)
 	local minter_flag = task.inter_flag or 1
 	local mpermissions = task.permissions or 0
-	local mshootPos = task.shootPos or CGeoPoint(-param.INF,-param.INF)
+	local mFirstPos = task.firstPos or CGeoPoint(-param.INF,-param.INF)
 	local mpos
 	local mdir
 	local msender = task.sender or 0
@@ -12,32 +12,7 @@ function Getball(task)
 	local mspeed  = task.speed or 0
 	local mforce_maunal_set_running_param = task.force_manual or false
 	matchPos = function(runner) 
-			local qflag = inter_flag or 0
-			local playerPos = CGeoPoint:new_local(player.pos(runner):x(),player.pos(runner):y())
-			local inter_pos = Utils.GetBestInterPos(vision,playerPos,param.playerVel,minter_flag,0)
-			local ballLine = CGeoSegment(ball.pos(),ball.pos() + Utils.Polar2Vector(-param.INF,ball.velDir()))
-			local playerPrj = ballLine:projection(player.pos(runner))
-			local canGetBall = ballLine:IsPointOnLineOnSegment(playerPrj)
-			local toballdist = player.toBallDist(runner) 
-			if player.kickBall(runner) and inter_pos:x() == ball.pos():x()    then
-				inter_pos = CGeoPoint(-99999,-99999)
-			end
-			if(GlobalMessage.Tick.ball.rights == -1 or ball.velMod() < 500) then
-				inter_pos = ball.pos()
-			end
-
-
-			if ((player.pos(runner) - mshootPos):mod() < 800) then
-				inter_pos = mshootPos
-			end
-			if(GlobalMessage.Tick.ball.rights == 0 and ball.velMod() < 500 and ball.pos() - player.pos(runner)) then
-				inter_pos = ball.pos()
-			end
-			-- debugEngine:gui_debug_x(inter_pos,4)
-			-- debugEngine:gui_debug_msg(inter_pos,runner .. "getBallPos",4)
-			debugEngine:gui_debug_x(inter_pos,4)
-			debugEngine:gui_debug_msg(inter_pos,runner .. "getBallPos",4)
-		return _c(inter_pos)
+		return _c(ball.pos())
 	end
 	execute = function(runner)
 		if runner >=0 and runner < param.maxPlayer then
@@ -48,14 +23,15 @@ function Getball(task)
 			print("Error runner in getball", runner)
 		end
 		local playerPos = CGeoPoint:new_local(player.pos(runner):x(),player.pos(runner):y())
-		local inter_pos = Utils.GetBestInterPos(vision,playerPos,param.playerVel,minter_flag,0)
+	--[[	local inter_pos = Utils.GetBestInterPos(vision,playerPos,param.playerVel,minter_flag,0,mFirstPos)--]]
 		local idir = player.toBallDir(runner)
-		local ipos = inter_pos	
+		local ipos = inter_pos
 
 		local toballDir = math.abs((ball.rawPos() - player.rawPos(runner)):dir() * 57.3)
 		local playerDir = math.abs(player.dir(runner)) * 57.3
 		local Subdir = math.abs(toballDir-playerDir)
 		local iflag = bit:_or(flag.allow_dss, flag.dodge_ball)
+		-- 吸球嘴和球的方向没对齐的情况
 		if Subdir > 30 then 
 			local DSS_FLAG = bit:_or(flag.allow_dss, flag.dodge_ball)
 			iflag =  DSS_FLAG
@@ -63,33 +39,76 @@ function Getball(task)
 			-- iflag = bit:_or(flag.allow_dss,flag.dribbling) 
 			iflag = flag.dribbling
 		end
-		-- 如果是敌方的球权，那么关闭闭障，直接怼脸
-
-		ipos = CGeoPoint:new_local(ipos:x(),ipos:y())
-		-- 到吸球嘴的距离
-		-- ipos = ipos + Utils.Polar2Vector(-30,player.toBallDir(runner))
-		local ballLine = CGeoSegment(ball.pos(),ball.pos() + Utils.Polar2Vector(param.INF,ball.velDir()))
-		local playerPrj = ballLine:projection(player.rawPos(runner))
-		local canRush = ballLine:IsPointOnLineOnSegment(playerPrj)
-		local endvel = Utils.Polar2Vector(0,(ipos - player.pos(runner)):dir())
-		if canRush then
-			endvel = Utils.Polar2Vector(0,(ipos - player.pos(runner)):dir())
+		local ballLine = CGeoLine(ball.pos(),ball.velDir())
+		local prjFirstPos = ballLine:projection(mFirstPos)
+		local prjPosToFirstPosDist = prjFirstPos:dist(mFirstPos)
+		debugEngine:gui_debug_msg(prjFirstPos,prjPosToFirstPosDist,9)
+		if (prjPosToFirstPosDist > 800) then
+			-- 没射准就站在原地
+			ipos = player.pos(runner)
 		end
 
+		-- if (inter_pos:x() == param.INF) then
+		-- 	ipos = player.pos(runner)
+		-- end
+		-- if (ipos - param.lastInterPos):mod() < 115 then
+		-- 	ipos = param.lastInterPos
+		-- end 
+			local v_ = 0
+		local bp =ball.pos()
+		local plp =player.pos(runner)
+		local Diff = math.abs((bp -plp ):mod())
+		local BallVel =ball.velMod()
 
-
-		if GlobalMessage.Tick.ball.rights == -1 or GlobalMessage.Tick.ball.rights == 2 then
-			local theirDribblingPlayerPos = enemy.pos(GlobalMessage.Tick.their.dribbling_num)
-			iflag = flag.dribbling
-			ipos = ball.pos() + Utils.Polar2Vector(-80,(theirDribblingPlayerPos - ball.pos()):dir())
-		end
-
-		if (ipos - param.lastInterPos):mod() < 50 then
-			ipos = param.lastInterPos
+		--[[if BallVel>1500 then
+			v_=450
+		else --v_=[0,1500]
+			if BallVel>400  and Diff< 600 then
+				v_=350
+			else -- [0,400] and ([400,1500]and Diff > 600) 
+				v_=0
+				if BallVel < 200 and Diff < 600 then --[0,200] and Diff < 600
+					v_= 50
+				else-- [200,400]
+					v_=100
+				end
+			end
+		end--]]
+		if BallVel > 1500 then           -- [1500,+max]
+			v_ = 450
+		else                             --[0,1500]
+			
+			if BallVel > 700 then           --[700,1500]
+				v_ = 250
+			else                            --[0,700]
+				v_ = 0
+				if BallVel < 400 then           --[0,400]
+					v_ = 150
+						
+					if BallVel < 200 then         --[0,200]
+							v_ = 50
+						if Diff < 100 then
+							v_ = 0
+						else 
+							v_ = 50
+						end
+					else                          --[200,400]
+						if Diff < 100 then 
+							v_ = 0
+						else 
+							v_ = 25
+						end
+					end
+				else                             --[400,700]
+					v_ = 200
+				end
+			end
 		end 
-		if ipos:x() == param.INF then
-			ipos = ball.pos()
-		end
+
+
+
+		local endVel = Utils.Polar2Vector(v_,(ipos - player.pos(runner)):dir())
+		mvel = endVel
 		param.lastInterPos = ipos
 		mvel = _c(endvel) or CVector:new_local(0,0)
 		mpos = _c(ipos,runner)
