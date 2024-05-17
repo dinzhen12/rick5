@@ -37,14 +37,14 @@ Icount = 5
 powerShoot = 300
 powerTouch = 300
 shootPos = CGeoPoint(4500,0)	
-shootError = 4 --[[ 5--]]
+shootError = --[[4--]]  5
 canTouchAngle = 45
 --------------------------------
 -- 旋转参数
 -- rotPos = CGeoPoint(150,120)
 rotPos = CGeoPoint(60,60)
-rotVel = 4.1
-rotCompensate = --[[-0.026--]]    0.02  --旋转补偿
+rotVel = 4.2
+rotCompensate = -0.016   --[[ 0.025--]]  --旋转补偿
 ---------------------------------
 -- getball参数
 playerVel = 1
@@ -82,7 +82,7 @@ goalieBuf = 43
 -- goalieAimDirRadius = pitchLength/4
 --------------------------
 -- 是否为真实场地
-isReality = --[[true --]] false
+isReality = true  --[[false--]]
 -- 对齐的准确度
 alignRate = 0.8
 --~ -------------------------------------------

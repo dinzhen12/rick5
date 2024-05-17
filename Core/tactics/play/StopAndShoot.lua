@@ -169,8 +169,7 @@ firstState = "Init1",
         debugEngine:gui_debug_msg(CGeoPoint(-800,-800), ball.velMod(),4)
        
      
-        if player.myinfraredCount("Assister") > 150  then
-          
+        if player.myinfraredCount("Assister") > 150  then         
             return "Stop"
         end
 
@@ -212,8 +211,8 @@ firstState = "Init1",
           
         local Mordis=700 -  enemyTOPasslineDist
         
-        if  Mordis > 300 then
-            Mordis=300
+        if  Mordis > 100 then
+            Mordis=100
         end
         if Mordis < 0 then 
             Mordis = 0
@@ -236,8 +235,6 @@ firstState = "Init1",
         debugEngine:gui_debug_msg(CGeoPoint(0,800),player.myinfraredCount("Assister"),6)
         
 
-
-
         local Vy = player.rotVel("Assister")
         local ToTargetDist = player.toPointDist("Assister",function() return resPassPos end)
         resShootPos = task.compensateAngle("Assister",Vy,function() return resPassPos end,ToTargetDist * param.rotCompensate)
@@ -246,9 +243,6 @@ firstState = "Init1",
             return "shoot"
         end
         
-
-
-
     end,
     Assister = function() return task.TurnToPointV2("Assister", function() return resShootPos end,param.rotVel) end,
     
